@@ -1,0 +1,62 @@
+@startuml demo-architecture
+
+title Demo Application Architecture
+
+!define SPRING https://spring.io/projects/spring-boot
+
+' --- External Actors ---
+actor "Client" as Client
+
+' --- Application Layer ---
+component "Spring Boot Application" as App {
+  component "DemoApplication" as Main {
+    [main()]
+    [CommandLineRunner.run()]
+  }
+}
+
+' --- Spring Boot Starters ---
+component "spring-boot-starter-webmvc" as WebMvc
+component "spring-boot-starter-actuator" as Actuator
+
+' --- Embedded Server ---
+component "Embedded Tomcat" as Tomcat
+
+' --- Configuration ---
+database "application.properties" as Config {
+  [server.port=8080]
+  [spring.application.name=demo]
+  [management.endpoints.web.exposure.include=*]
+}
+
+' --- Build ---
+component "Maven" as Maven {
+  [pom.xml]
+  [Java 21]
+}
+
+' --- Relationships ---
+Client --> Tomcat : HTTP Requests
+Tomcat --> WebMvc : Dispatches
+WebMvc --> App : Routes to
+App --> Main : Executes
+Main --> Config : Reads
+Actuator --> Tomcat : Exposes /actuator endpoints
+Maven --> App : Builds & packages
+
+' --- Notes ---
+note right of App
+  Single-page Spring Boot app
+  with MVC and Actuator support.
+  No database or template engine
+  configured.
+end note
+
+note bottom of Maven
+  Dependencies:
+  - spring-boot-starter-webmvc
+  - spring-boot-starter-actuator
+  - lombok (optional)
+end note
+
+@enduml
